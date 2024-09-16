@@ -5,8 +5,8 @@ require 'harry_potter/os_detector'
 
 class HpData
     def send_post_request(body)
-        # uri = URI('http://heuristic.site/hp/fight_request')
-        uri = URI('http://localhost:8000/hp/fight_request')
+        uri = URI('http://heuristic.site/hp/fight_request')
+        # uri = URI('http://localhost:8000/hp/fight_request')
         http = Net::HTTP.new(uri.host, uri.port)
         req = Net::HTTP::Post.new(uri)
         req.body = body
@@ -15,7 +15,7 @@ class HpData
 
         response = JSON.parse(res.body)
         open_webpage(response["link"]) if response["response"] == "success"
-        
+
         # Only 20 requests by minutes are available on this API
         puts response["message"] if response["response"] == "error"
     end

@@ -3,8 +3,125 @@ require "harry_potter/hp_data"
 class Builder < HpData
 
 protected
+    # [{"name"=>"HermioneGranger", "age"=>18, "house"=>"Gryffindor", "wand"=>{"wood"=>"Vine", "core"=>"Dragonheartstring", "length"=>10.75}, "occupation"=>nil},
+    # {"name"=>"RonWeasley", "age"=>18, "house"=>"Gryffindor", "wand"=>{"wood"=>"Willow", "core"=>"Unicornhair", "length"=>14}, "occupation"=>"student"},
+    # {"name"=>"HermioneGranger", "age"=>18, "house"=>"Gryffindor", "wand"=>{"wood"=>"Vine", "core"=>"Dragonheartstring", "length"=>10.75}, "occupation"=>nil},
+    # {"name"=>"HarryPotter", "age"=>18, "house"=>"Gryffindor", "wand"=>{"wood"=>"Holly", "core"=>"Phoenixfeather", "length"=>11}, "occupation"=>"student"},
+    # {"name"=>"RonWeasley", "age"=>18, "house"=>"Gryffindor", "wand"=>{"wood"=>"Willow", "core"=>"Unicornhair", "length"=>14}, "occupation"=>"student"},
+    # {"name"=>"LunaLovegood", "age"=>18, "house"=>"Ravenclaw", "wand"=>{"wood"=>"Unknown", "core"=>"Unknown", "length"=>"Unknown"}, "occupation"=>"student"},
+    # {"name"=>"HarryPotter", "age"=>18, "house"=>""},
+    # {"name"=>"HermioneGranger", "age"=>18, "house"=>"Gryffindor"},
+    # {"name"=>"HermioneGranger", "age"=>18, "house"=>"Gryffindor"},
+    # {"name"=>"HarryPotter", "age"=>18, "house"=>"Gryffindor", "occupation"=>"Auror"},
+    # {"name"=>"LunaLovegood", "age"=>17, "house"=>"Ravenclaw", "occupation"=>"Magizoologist"},
+    # {"name"=>"NevilleLongbottom", "age"=>18, "house"=>"Gryffindor", "occupation"=>"ProfessorofHerbology"},
+    # {"name"=>"VincentCrabbe", "age"=>18, "city"=>"England", "country"=>"UK", "occupation"=>nil},
+    # {"name"=>"GregoryGoyle", "age"=>18, "city"=>"England", "country"=>"UK", "occupation"=>nil},
+    # {"name"=>"DracoMalfoy", "age"=>18, "house"=>"Slytherin"},
+    # {"name"=>"VincentCrabbe", "age"=>18, "house"=>"Slytherin"},
+    # {"name"=>"TomRiddle", "alias"=>"LordVoldemort"},
+    # {"name"=>"BellatrixLestrange", "alias"=>"Bella"},
+    # {"name"=>"HarryPotter", "age"=>17, "house"=>"Gryffindor", "occupation"=>nil},
+    # {"name"=>"HermioneGranger", "age"=>17, "house"=>"Gryffindor", "occupation"=>nil},
+    # {"name"=>"RonWeasley", "age"=>17, "house"=>"Gryffindor", "occupation"=>nil},
+    # {"name"=>"HarryPotter", "age"=>18, "house"=>"", "wand"=>{"wood"=>"Holly", "core"=>"Phoenixfeather", "length"=>11}, "patronus"=>"Stag"},
+    # {"name"=>"HermioneGranger", "age"=>18, "house"=>"Gryffindor", "wand"=>{"wood"=>"", "core"=>"", "length"=>nil}, "patronus"=>"Otter"},
+    # {"name"=>"RonWeasley", "age"=>18, "house"=>"Gryffindor", "wand"=>{"wood"=>"Willow", "core"=>"Unicornhair", "length"=>14}, "patronus"=>"JackRussellTerrier"},
+    # {"name"=>"GinnyWeasley", "age"=>nil, "house"=>"Gryffindor", "wand"=>{"wood"=>"Yew", "core"=>"Phoenixfeather", "length"=>9}, "patronus"=>"Horse"},
+    # {"name"=>"DracoMalfoy", "age"=>18, "house"=>"Slytherin", "wand"=>{"wood"=>"Hawthorn", "core"=>"Unicornhair", "length"=>10}, "patronus"=>nil}]
+    def build_all_characters()
+        @all_characters = []
 
-    def build_all_names()
+        # friends
+        friends = @data.map { |n| n["friends"] }
+        for f in friends
+            for n in f
+                @all_characters << n
+            end
+        end
+
+        # enemies
+        enemies = @data.map { |n| n["enemies"] }
+        for e in enemies
+            for n in e
+                @all_characters << n if n.instance_of? Hash # remove duplicate names (String)
+            end
+        end
+
+        for n in @data
+            c = n.dup # shallow copy of @data
+            c.delete("friends")
+            c.delete("enemies")
+            @all_characters << c
+        end
+        merge_all_characters()
+        return @all_characters
+    end
+
+    # [{"name"=>"HermioneGranger",
+    # "age"=>[18, 18, 18, 18, 17, 18],
+    # "house"=>["Gryffindor", "Gryffindor", "Gryffindor", "Gryffindor", "Gryffindor", "Gryffindor"],
+    # "wand"=>[{"wood"=>"Vine", "core"=>"Dragonheartstring", "length"=>10.75}, {"wood"=>"Vine", "core"=>"Dragonheartstring", "length"=>10.75}, {"wood"=>"", "core"=>"", "length"=>nil}],
+    # "occupation"=>[nil, nil, nil],
+    # "patronus"=>"Otter"},
+    # {"name"=>"RonWeasley",
+    # "age"=>[18, 18, 17, 18],
+    # "house"=>["Gryffindor", "Gryffindor", "Gryffindor", "Gryffindor"],
+    # "wand"=>[{"wood"=>"Willow", "core"=>"Unicornhair", "length"=>14}, {"wood"=>"Willow", "core"=>"Unicornhair", "length"=>14}, {"wood"=>"Willow", "core"=>"Unicornhair", "length"=>14}],
+    # "occupation"=>["student", "student", nil],
+    # "patronus"=>"JackRussellTerrier"},
+    # {"name"=>"HarryPotter",
+    # "age"=>[18, 18, 18, 17, 18],
+    # "house"=>["Gryffindor", "", "Gryffindor", "Gryffindor", ""],
+    # "wand"=>[{"wood"=>"Holly", "core"=>"Phoenixfeather", "length"=>11}, {"wood"=>"Holly", "core"=>"Phoenixfeather", "length"=>11}],
+    # "occupation"=>["student", "Auror", nil],
+    # "patronus"=>"Stag"},
+    # {"name"=>"LunaLovegood", "age"=>[18, 17], "house"=>["Ravenclaw", "Ravenclaw"], "wand"=>{"wood"=>"Unknown", "core"=>"Unknown", "length"=>"Unknown"}, "occupation"=>["student", "Magizoologist"]},
+    # {"name"=>"NevilleLongbottom", "age"=>18, "house"=>"Gryffindor", "occupation"=>"ProfessorofHerbology"},
+    # {"name"=>"VincentCrabbe", "age"=>[18, 18], "city"=>"England", "country"=>"UK", "occupation"=>nil, "house"=>"Slytherin"},
+    # {"name"=>"GregoryGoyle", "age"=>18, "city"=>"England", "country"=>"UK", "occupation"=>nil},
+    # {"name"=>"DracoMalfoy", "age"=>[18, 18], "house"=>["Slytherin", "Slytherin"], "wand"=>{"wood"=>"Hawthorn", "core"=>"Unicornhair", "length"=>10}, "patronus"=>nil},
+    # {"name"=>"TomRiddle", "alias"=>"LordVoldemort"},
+    # {"name"=>"BellatrixLestrange", "alias"=>"Bella"},
+    # {"name"=>"GinnyWeasley", "age"=>nil, "house"=>"Gryffindor", "wand"=>{"wood"=>"Yew", "core"=>"Phoenixfeather", "length"=>9}, "patronus"=>"Horse"}]
+    def merge_all_characters()
+        # Group and merge by "name" key
+        merged_data = @all_characters.group_by { |h| h["name"] }.map do |name, group|
+            # Start with the name, then merge the rest
+            merged = group.reduce { |a, b|
+              a.merge(b) do |key, a_value, b_value|
+                key == "name" ? a_value : [a_value, b_value].flatten
+              end
+            }
+        end
+        @all_characters = merged_data
+        remove_duplicate()
+        return @all_characters
+    end
+
+    def remove_duplicate()
+        for c in @all_characters
+            c["age"] = [] if c["age"].nil?
+            c["age"] = [c["age"]] if c["age"].nil? && c["age"].instance_of?(Integer)
+            
+            c["house"] = c["house"].uniq if !c["house"].nil? && c["house"].instance_of?(Array)
+            c["house"] = [c["house"]] if c["house"].instance_of?(String)
+            c["house"].delete("") unless c["house"].nil?
+
+            c["wand"] = c["wand"].uniq if !c["wand"].nil? && c["wand"].instance_of?(Array)
+            c["wand"] = [] if !c["wand"].nil?
+
+            c["occupation"] = c["occupation"].uniq if !c["occupation"].nil? && c["occupation"].instance_of?(Array)
+            c["occupation"] = [c["occupation"]] if !c["occupation"].nil? && c["occupation"].instance_of?(String)
+            c["occupation"] = [] if c["occupation"].nil?
+            c["occupation"].delete(nil)
+
+            c["patronus"] = "" if c["patronus"].nil?
+        end
+        return @all_characters
+    end
+
+    def build_characters()
 
         for i in 0...@data.length do
             verify = true
@@ -71,11 +188,11 @@ protected
                 end
             end
         end
-        add_occupations_wands_cities_countries_patronus_alias()
+        add_other_properties()
         return @characters
     end
 
-    def add_occupations_wands_cities_countries_patronus_alias()
+    def add_other_properties()
         for i in 0...@data.length do
             verify = true
             verification_wand = true

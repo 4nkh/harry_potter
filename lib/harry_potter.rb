@@ -12,8 +12,9 @@ class HarryPotter < Builder
     def initialize()
         get_data() 
 
-        @characters, @houses = [], []
-        build_all_names()
+        @all_characters, @characters, @houses = [], [], []
+        build_characters()
+        build_all_characters()
         build_houses()
 
         @houses_with_max_ages, @houses_with_min_ages = {}, {}
@@ -45,10 +46,14 @@ class HarryPotter < Builder
         puts
         puts "see the average for the youngest ages recorded by houses: hp.how_average_min"
         puts
-        puts "see wands: hp.show_wands" #have to complete
-        puts
+        # puts "see wands: hp.show_wands" #have to complete
+        # puts
         puts "see json data: hp.show_json"
         puts
+        puts
+        puts
+        puts
+        puts "get character hashes: hp.show_all_characters"
     end
 
     def random_fight()
@@ -63,17 +68,17 @@ class HarryPotter < Builder
         for n in @characters
             first_alias = n[8] if n[0] == first
             second_alias = n[8] if n[0] == second
-            first_country = n[7] if n[0] == first
-            second_country = n[7] if n[0] == second
-            first_city = n[6] if n[0] == first
-            second_city = n[6] if n[0] == second
-            first_city = n[6] if n[0] == first
-            second_city = n[6] if n[0] == second
-            first_occupation = n[5] if n[0] == first
-            second_occupation = n[5] if n[0] == second
-            # if n[4][0].nil?
-            # puts n[4][0].key?("wood") #.index {|h| h["wood"] }
-            # n[4].key?("wood") if n[0] == first
+            first_patronus = n[7] if n[0] == first
+            second_patronus = n[7] if n[0] == second
+            first_country = n[6] if n[0] == first
+            second_country = n[6] if n[0] == second
+            first_city = n[5] if n[0] == first
+            second_city = n[5] if n[0] == second
+            # for o in n[3]
+            #     first_occupation = n[3] if n[0] == first
+            #     second_occupation = n[3] if n[0] == second
+            # end
+
             first_wand = ""
             second_wand = ""
             first_wand = n[4][0].key?("wood") ? "wand: in " + n[4][0]["wood"] + " using a core of " + n[4][0]["core"] + " with a length of " + n[4][0]["length"].to_s : "" if n[0] == first && !n[4][0].nil?
@@ -94,7 +99,8 @@ class HarryPotter < Builder
                 '", "first_city": "' + first_city + '", "second_city": "' + second_city + 
                 '", "first_country": "' + first_country + '", "second_country": "' + second_country + 
                 '", "first_wand": "' + first_wand + '", "second_wand": "' + second_wand +
-                '", "first_occupation": "' + first_occupation + '", "second_occupation": "' + second_occupation + '"}'
+                # '", "first_occupation": "' + first_occupation + ', "second_occupation": "' + second_occupation + 
+                '", "first_patronus": "' + first_patronus + '", "second_patronus": "' + second_patronus +'"}'
         send_post_request(body)
     end
 
@@ -107,6 +113,21 @@ class HarryPotter < Builder
             a << n[0]
         end
         return a
+    end
+
+    # [{"name"=>"HermioneGranger", "age"=>[18, 18, 18, 18, 17, 18], "house"=>["Gryffindor"], "wand"=>[], "occupation"=>[], "patronus"=>"Otter"},
+    # {"name"=>"RonWeasley", "age"=>[18, 18, 17, 18], "house"=>["Gryffindor"], "wand"=>[], "occupation"=>["student"], "patronus"=>"JackRussellTerrier"},
+    # {"name"=>"HarryPotter", "age"=>[18, 18, 18, 17, 18], "house"=>["Gryffindor"], "wand"=>[], "occupation"=>["student", "Auror"], "patronus"=>"Stag"},
+    # {"name"=>"LunaLovegood", "age"=>[18, 17], "house"=>["Ravenclaw"], "wand"=>[], "occupation"=>["student", "Magizoologist"], "patronus"=>""},
+    # {"name"=>"NevilleLongbottom", "age"=>18, "house"=>["Gryffindor"], "occupation"=>["ProfessorofHerbology"], "patronus"=>""},
+    # {"name"=>"VincentCrabbe", "age"=>[18, 18], "city"=>"England", "country"=>"UK", "occupation"=>[], "house"=>["Slytherin"], "patronus"=>""},
+    # {"name"=>"GregoryGoyle", "age"=>18, "city"=>"England", "country"=>"UK", "occupation"=>[], "patronus"=>""},
+    # {"name"=>"DracoMalfoy", "age"=>[18, 18], "house"=>["Slytherin"], "wand"=>[], "patronus"=>"", "occupation"=>[]},
+    # {"name"=>"TomRiddle", "alias"=>"LordVoldemort", "age"=>[], "occupation"=>[], "patronus"=>""},
+    # {"name"=>"BellatrixLestrange", "alias"=>"Bella", "age"=>[], "occupation"=>[], "patronus"=>""},
+    # {"name"=>"GinnyWeasley", "age"=>[], "house"=>["Gryffindor"], "wand"=>[], "patronus"=>"Horse", "occupation"=>[]}]
+    def show_all_characters()
+        return @all_characters
     end
 
     # [["HarryPotter", "Gryffindor", [18, 18, 18, 18, 17], ["student", "Auror"], [{"wood"=>"Holly", "core"=>"Phoenixfeather", "length"=>11}], "", "", "Stag", ""],
